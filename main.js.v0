@@ -99,18 +99,15 @@ this.jsPhi.Fluid.updateCalls.default = function(scope,nx,ny,i,j){
 };
 
 this.jsPhi.Fluid.updateCalls.fhp1 = function(scope,nx,ny,i,j){
-	// do not touch solid cells
-	if (scope.cells[i][j].state==63) return;
 	// indices of adjacent cells
 	var inext = new Array(6);
 	var jnext = new Array(6);
-	var k = i; if (j%2==0) --k;
-	inext[0] = k  ; jnext[0] = j+1;
-	inext[1] = i-1; jnext[1] = j;
-	inext[2] = k  ; jnext[2] = j-1;
-	inext[3] = k+1; jnext[3] = j-1;
-	inext[4] = i+1; jnext[4] = j;
-	inext[5] = k+1; jnext[5] = j+1;
+	inext[0] = i+1; jnext[0] = j-1;
+	inext[1] = i+1; jnext[1] = j;
+	inext[2] = i+1; jnext[2] = j+1;
+	inext[3] = i  ; jnext[3] = j+1;
+	inext[4] = i-1; jnext[4] = j;
+	inext[5] = i  ; jnext[5] = j-1;
 	// toroid wrapping
 	for (var k = 0; k<6; k++) {
 		if (inext[k]<0) inext[k] = nx-1;
@@ -118,31 +115,14 @@ this.jsPhi.Fluid.updateCalls.fhp1 = function(scope,nx,ny,i,j){
 		if (inext[k]>=nx) inext[k] = 0;
 		if (jnext[k]>=ny) jnext[k] = 0;
 	}
+	// particle propagation
 	for (var k = 0; k<6; k++) {
 		var m = 1<<k;
 		if (((scope.cells[i][j].state&m) != 0) && ((scope.cells[inext[k]][jnext[k]].state&m) == 0)) {
-			// particle propagation
 			var s = scope.cells[i][j].state;
 			scope.changeCell(i,j,s^m);
 			s = scope.cells[inext[k]][jnext[k]].state;
 			scope.changeCell(inext[k],jnext[k],s^m);
-			// particle collision
-			s = scope.cells[inext[k]][jnext[k]].state;
-			var s1 = -1;
-			if (s==9) s1 = Math.random()<0.5 ? 18:36;
-			else if (s==18) s1 = Math.random()<0.5 ? 9:36;
-			else if (s==36) s1 = Math.random()<0.5 ? 9:18;
-			else if (s==21) s1 = 42;
-			else if (s==42) s1 = 21;
-			if (s1>=0) {
-				scope.changeCell(inext[k],jnext[k],s1);
-			}
-		} else if (((scope.cells[i][j].state&m) != 0) && (scope.cells[inext[k]][jnext[k]].state == 63)) {
-			// bounce off the wall
-			var s = scope.cells[i][j].state;
-			var k1 = (k+3)%6;
-			var m1 = (1<<k1)|m;
-			scope.changeCell(i,j,s^m1);
 		}
 	}
 };
@@ -157,29 +137,14 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 			var y = 2*d.y + 3*j*d.y;
 			if(j%2==1) x += 2*d.x/2;
 			var p = new that.jsPhi.point2D(x,y);
-			//var state = 0; if (i==10 && j==10) state = 8;
-			//var state = 0; if (i%4==0 && j%4==0) state = 8;
-			var state = 0; if (i%3==0 && j%3==0 && i<nx/3) state = 8;
-			//var state = 0; if (i%4==0 && j%4==0) state = 1<<Math.floor(Math.random()*6);
-			//var state = Math.floor(Math.random()*64);
-			//var state = 0; if (i>=23 && i<=27 && j>=10 && j<=15) state = 63;
+			//var state = 0; if (i==0 && j==0) state = 21;
+			var state = Math.floor(Math.random() * 64);
+			if (i>=10 && i<=15 && j>=10 && j<=15) state = 63;
 			this.cells[i][j] = new that.jsPhi.Hexagon(p,d,state);
 			//if (i>=10 && i<=15 && j>=10 && j<=15) this.cells[i][j].color = "#00FFFF";
 			//this.cells2[i][j] = new that.jsPhi.Hexagon(p,d,state);
 		}
 	}
-
-	// Trump's wall
-	for (var i = 0; i < nx; i++) {
-		this.cells[i][0].state = 63;
-		this.cells[i][ny-1].state = 63;
-	}
-	for (var j = 0; j < ny; j++) {
-		this.cells[0][j].state = 63;
-		this.cells[nx-1][j].state = 63;
-	}
-	for (var j = 0; j < 10; j++) this.cells[nx/2][j].state = 63;
-	for (var j = 13; j < ny; j++) this.cells[nx/2][j].state = 63;
 
 	this.nn = new Array();
 	for (var v = 0; v < nx*ny; v++) this.nn[v] = v;
@@ -245,7 +210,7 @@ window.onload = function(){
 	//h1.draw(context);
 
 	var d = new this.jsPhi.point2D(10,6);
-	var s = new this.jsPhi.FluidSimulation(50,25,d);
+	var s = new this.jsPhi.FluidSimulation(25,25,d);
 	s.draw(context,window.innerWidth,window.innerHeight);
 	//s.update(outerScope.jsPhi.Fluid.updateCalls.fhp1);
 	//s.draw(context,window.innerWidth,window.innerHeight);
