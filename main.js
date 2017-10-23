@@ -134,20 +134,20 @@ this.jsPhi.Fluid.updateCalls.fhp1 = function(scope,nx,ny,i,j){
 			else if (s==36) s1 = Math.random()<0.5 ? 9:18;
 			else if (s==21) s1 = 42;
 			else if (s==42) s1 = 21;
-			if (s1>=0) {
-				scope.changeCell(inext[k],jnext[k],s1);
-			}
+			if (s1>=0) scope.changeCell(inext[k],jnext[k],s1);
 		} else if (((scope.cells[i][j].state&m) != 0) && (scope.cells[inext[k]][jnext[k]].state == 63)) {
 			// bounce off the wall
 			var s = scope.cells[i][j].state;
 			var k1 = (k+3)%6;
-			var m1 = (1<<k1)|m;
-			scope.changeCell(i,j,s^m1);
+			var m1 = 1<<k1;
+			// make sure that the bouncing particle goes to a free slot
+			if ((scope.cells[i][j].state&m1) == 0) scope.changeCell(i,j,s^(m|m1));
 		}
 	}
 };
 
 this.jsPhi.FluidSimulation = function(nx,ny,d){
+	this.counter = 0;
 	this.cells = new Array();
 	for (var i = 0; i < nx; i++) {
 		this.cells[i] = [];
@@ -159,7 +159,7 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 			var p = new that.jsPhi.point2D(x,y);
 			//var state = 0; if (i==10 && j==10) state = 8;
 			//var state = 0; if (i%4==0 && j%4==0) state = 8;
-			var state = 0; if (i%3==0 && j%3==0 && i<nx/3) state = 8;
+			var state = 0; if (i%3==0 && j%3==0 && i<nx/2-1) state = 1<<Math.floor(Math.random()*6);
 			//var state = 0; if (i%4==0 && j%4==0) state = 1<<Math.floor(Math.random()*6);
 			//var state = Math.floor(Math.random()*64);
 			//var state = 0; if (i>=23 && i<=27 && j>=10 && j<=15) state = 63;
@@ -169,7 +169,7 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 		}
 	}
 
-	// Trump's wall
+	// borders
 	for (var i = 0; i < nx; i++) {
 		this.cells[i][0].state = 63;
 		this.cells[i][ny-1].state = 63;
@@ -178,6 +178,7 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 		this.cells[0][j].state = 63;
 		this.cells[nx-1][j].state = 63;
 	}
+	// Trump's wall
 	for (var j = 0; j < 10; j++) this.cells[nx/2][j].state = 63;
 	for (var j = 13; j < ny; j++) this.cells[nx/2][j].state = 63;
 
@@ -194,6 +195,43 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 				this.cells[i][j].draw(c);
 			}
 		}
+
+		/*count particles moving in various directions
+		var vcount = [0,0,0,0,0,0];
+		var vsum = 0;
+		for (var i = 0; i < nx; i++) {
+			for (var j = 0; j < ny; j++) {
+				for (var k = 0; k<6; k++) {
+					var m = 1<<k;
+					if ((this.cells[i][j].state&m) != 0) { vcount[k]++; vsum++; }
+				}
+			}
+		}
+		var text = "";
+		for (var k = 0; k<6; k++) {
+			if (k!=0) text += "+";
+			text += vcount[k];
+		}
+		text += " = "; text += vsum;*/
+
+		// count particles in different regions
+		var vsum1 = 0, vsum2 = 0;
+		for (var i = 0; i < nx; i++) {
+			for (var j = 0; j < ny; j++) {
+				if (this.cells[i][j].state==63) continue;
+				for (var k = 0; k<6; k++) {
+					var m = 1<<k;
+					if ((this.cells[i][j].state&m) != 0) {
+						if (i<nx/2) vsum1++; else vsum2++;
+					}
+				}
+			}
+		}
+		this.counter++;
+		var text = this.counter + ": " + vsum1 + "+" + vsum2;
+
+		// status line
+		c.fillText(text,10,h-20);
 	}
 
 	this.changeCell = function(i,j,v){
@@ -201,11 +239,6 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 	}
 
 	this.update = function(upCall){
-		// for (var i = 0; i < nx; i++) {
-		// 	for (var j = 0; j < ny; j++) {
-		// 		this.cells2[i][j].state = this.cells[i][j].state;
-		// 	}
-		// }
 
 		var n = this.nn.length;
 		for (var i = 0; i < n; i++){
@@ -244,8 +277,10 @@ window.onload = function(){
 	//var h1 = new this.jsPhi.Hexagon(p1,d,42);
 	//h1.draw(context);
 
-	var d = new this.jsPhi.point2D(10,6);
-	var s = new this.jsPhi.FluidSimulation(50,25,d);
+	//var d = new this.jsPhi.point2D(10,6);
+	//var s = new this.jsPhi.FluidSimulation(50,25,d);
+	var d = new this.jsPhi.point2D(5,3);
+	var s = new this.jsPhi.FluidSimulation(100,50,d);
 	s.draw(context,window.innerWidth,window.innerHeight);
 	//s.update(outerScope.jsPhi.Fluid.updateCalls.fhp1);
 	//s.draw(context,window.innerWidth,window.innerHeight);
@@ -265,3 +300,7 @@ Array.prototype.setRandomElement = function (v) {
     this[Math.floor(Math.random() * this.length)] = v;
 		return v;
 };
+
+function save(data){
+	var b = new Blob([data],{type:"text/plain"});
+}
