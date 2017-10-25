@@ -229,6 +229,7 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 		}
 		this.counter++;
 		var text = this.counter + ": " + vsum1 + "+" + vsum2;
+		this.vs1 = vsum1;
 
 		// status line
 		c.fillText(text,10,h-20);
@@ -262,29 +263,28 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 }
 
 var context = null;
-var outerScope = this;
+var logIter = 50000;
 
 window.onload = function(){
 	document.getElementById("myCan").width = window.innerWidth;//500;
 	document.getElementById("myCan").height = window.innerHeight;//500;
 	context = document.getElementById("myCan").getContext("2d");
 
-	//var p = new this.jsPhi.point2D(50,50);
-	//var d = new this.jsPhi.point2D(20,10);
-	//var h = new this.jsPhi.Hexagon(p,d,21);
-	//h.draw(context);
-	//var p1 = new this.jsPhi.point2D(150,50);
-	//var h1 = new this.jsPhi.Hexagon(p1,d,42);
-	//h1.draw(context);
-
 	//var d = new this.jsPhi.point2D(10,6);
 	//var s = new this.jsPhi.FluidSimulation(50,25,d);
 	var d = new this.jsPhi.point2D(5,3);
 	var s = new this.jsPhi.FluidSimulation(100,50,d);
 	s.draw(context,window.innerWidth,window.innerHeight);
-	//s.update(outerScope.jsPhi.Fluid.updateCalls.fhp1);
+	//s.update(thatScope.jsPhi.Fluid.updateCalls.fhp1);
 	//s.draw(context,window.innerWidth,window.innerHeight);
-	window.stop = setInterval(function(){s.update(outerScope.jsPhi.Fluid.updateCalls.fhp1);s.draw(context,window.innerWidth,window.innerHeight);},100);
+	var i = 0;
+	window.stop = setInterval(function(){
+		s.update(that.jsPhi.Fluid.updateCalls.fhp1);
+		s.draw(context,window.innerWidth,window.innerHeight);
+		if(logIter>0) console.log("Current Iter: "+i);
+		if(logIter>0&&i<logIter) write(s.vs1+"/n");
+		if(logIter>0) i++;
+	},100);
 };
 
 Array.prototype.clone = function() {
@@ -300,7 +300,3 @@ Array.prototype.setRandomElement = function (v) {
     this[Math.floor(Math.random() * this.length)] = v;
 		return v;
 };
-
-function save(data){
-	var b = new Blob([data],{type:"text/plain"});
-}
