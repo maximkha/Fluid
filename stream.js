@@ -40,7 +40,7 @@ function trySend()
     //console.log("same:"+sendqueue.reduce(function(a,b){return a==b;}));
     var d = sendqueue.join('');
     sendqueue = [];
-    setTimeout(function(){sendPost(hostURL,{data:d},queueCheck)},500);
+    setTimeout(function(){sendPost(hostURL,{data:d},queueCheck)},1000);
     waitingResponse = true;
   }
 }
