@@ -180,7 +180,7 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 	}
 	// Trump's wall
 	for (var j = 0; j < 10; j++) this.cells[nx/2][j].state = 63;
-	for (var j = 13; j < ny; j++) this.cells[nx/2][j].state = 63;
+	for (var j = 23; j < ny; j++) this.cells[nx/2][j].state = 63;
 
 	this.nn = new Array();
 	for (var v = 0; v < nx*ny; v++) this.nn[v] = v;
@@ -263,7 +263,7 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 }
 
 var context = null;
-var logIter = 50000;
+var logIter = -1;
 
 window.onload = function(){
 	document.getElementById("myCan").width = window.innerWidth;//500;
@@ -281,9 +281,7 @@ window.onload = function(){
 	window.stop = setInterval(function(){
 		s.update(that.jsPhi.Fluid.updateCalls.fhp1);
 		s.draw(context,window.innerWidth,window.innerHeight);
-		if(logIter>0) console.log("Current Iter: "+i);
-		if(logIter>0&&i<logIter) write(s.vs1+"/n");
-		if(logIter>0) i++;
+		if(logIter>0&&i<logIter) {console.log("Current Iter: "+i); write(s.vs1+"/n"); i++;}
 	},100);
 };
 

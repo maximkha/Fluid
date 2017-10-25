@@ -35,11 +35,12 @@ function write(str){
 
 function trySend()
 {
+	//console.log(sendqueue.length,waitingResponse);
   if(!waitingResponse){
-    //console.log("Sent queue");
+    //console.log("same:"+sendqueue.reduce(function(a,b){return a==b;}));
     var d = sendqueue.join('');
     sendqueue = [];
-    sendPost(hostURL,{data:d},queueCheck);
+    setTimeout(function(){sendPost(hostURL,{data:d},queueCheck)},500);
     waitingResponse = true;
   }
 }
