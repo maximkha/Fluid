@@ -169,19 +169,6 @@ this.jsPhi.FluidSimulation = function(nx,ny,d){
 		}
 	}
 
-	// borders
-	for (var i = 0; i < nx; i++) {
-		this.cells[i][0].state = 63;
-		this.cells[i][ny-1].state = 63;
-	}
-	for (var j = 0; j < ny; j++) {
-		this.cells[0][j].state = 63;
-		this.cells[nx-1][j].state = 63;
-	}
-	// Trump's wall
-	for (var j = 0; j < 10; j++) this.cells[nx/2][j].state = 63;
-	for (var j = 28; j < ny; j++) this.cells[nx/2][j].state = 63;
-
 	this.nn = new Array();
 	for (var v = 0; v < nx*ny; v++) this.nn[v] = v;
 

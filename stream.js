@@ -26,7 +26,7 @@ function sendPost(url, params, clbk)
 
 var waitingResponse = false;
 var sendqueue = [];
-var hostURL="http://localhost/dump";
+var hostURL="http://192.168.1.219/dump";
 
 function write(str){
   sendqueue.push(str);
@@ -40,7 +40,7 @@ function trySend()
     //console.log("same:"+sendqueue.reduce(function(a,b){return a==b;}));
     var d = sendqueue.join('');
     sendqueue = [];
-    setTimeout(function(){sendPost(hostURL,{data:d},queueCheck)},1000);
+    setTimeout(()=>{sendPost(hostURL,{data:d},queueCheck)},1000);
     waitingResponse = true;
   }
 }
@@ -49,4 +49,9 @@ function queueCheck()
 {
   waitingResponse = false;
   if(sendqueue.length > 0)trySend();
+}
+
+function setPath(p)
+{
+	sendPost(hostURL,{path:p},()=>{console.log("path set to: "+p);});
 }
